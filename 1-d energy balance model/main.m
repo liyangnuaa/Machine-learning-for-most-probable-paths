@@ -22,10 +22,10 @@ xnode=xnode1;
 % Hp1=gradient(H,p1f);
 
 alpha1=0.5;
-beta1=-1;
+beta1=0;
 dab1=alpha1*beta1/gamma(2-alpha1)/cos(pi*alpha1/2);
 
-%%% ³õÖµ
+%%% Â³ÃµÃ–Âµ
 m=1e3;
 Npath=1e3;
 T=linspace(0,1,Npath+1);
@@ -46,7 +46,7 @@ xT1=zeros(m,1);
 pos=1:m;
 Index=0;
 
-%%% µü´ú
+%%% ÂµÃ¼Â´Ãº
 for i=1:10000000
     for k=1:Npath
         x1f=x01(:,Npath+2-k);
