@@ -17,47 +17,97 @@ xnode=xnode1;
 % syms x1f p1f c dab1 Ch Gamma theta S0
 % f1=(S0*(0.5+0.2*tanh((x1f-265)/10))/4-Gamma*theta*x1f^4)/Ch;
 % f1x1=gradient(f1,x1f);
-% H=c^2*p1f^2+2*(f1-dab1)*p1f-f1x1+dab1^2/c^2;
+% H=1/4*c^2*p1f^2+(f1-dab1)*p1f-f1x1+dab1^2/c^2;
 % Hx1=gradient(H,x1f);
 % Hp1=gradient(H,p1f);
+%%%% vectorize(Hx1)
 
 alpha1=0.5;
 beta1=0;
 dab1=alpha1*beta1/gamma(2-alpha1)/cos(pi*alpha1/2);
 
-%%% ³õÖµ
-m=1e3;
-Npath=1e3;
+%%% 初值
+m=5e1;
+Npath=2e3;
 T=linspace(0,1,Npath+1);
 h=T(2)-T(1);
 I=ones(m,1);
 x1=xnode(1)+0.1*I*T;
 p1=zeros(m,Npath+1);
-lambdamax=100;
+lambdamax=200;
 lambda1=2*lambdamax*rand(m,1)-lambdamax;
 % lam=5;
 % lambda1=lam*randn(m,1);
 % lambda2=lam*randn(m,1);
-p1(:,end)=-lambda1;
+p1(:,end)=lambda1;
 x01=x1;
 p01=p1;
 delta=0.0001;
 xT1=zeros(m,1);
 pos=1:m;
+I0=[];
 Index=0;
 
-%%% µü´ú
+
+% m00=5;
+% x1=x1(1:m00,:);
+% p1=p1(1:m00,:);
+% x01=x1;
+% p01=p1;
+% for i=1:10000000
+%     for k=1:Npath
+%         x1f=x01(:,Npath+2-k);
+%         p1f=p01(:,Npath+2-k);
+%         K1p1=h*(- ((S0.*tanh(x1f./10 - 53./2).*(tanh(x1f./10 - 53./2).^2./10 - 1./10))./100 -...
+%             12.*Gamma.*theta.*x1f.^2)./Ch - (p1f.*((S0.*(tanh(x1f./10 - 53./2).^2./50 - 1./50))./4 + 4.*Gamma.*theta.*x1f.^3))./Ch);
+%         
+%         x1f=x01(:,Npath+1-k);
+%         p1f=p01(:,Npath+2-k)+K1p1;
+%         K2p1=h*(- ((S0.*tanh(x1f./10 - 53./2).*(tanh(x1f./10 - 53./2).^2./10 - 1./10))./100 -...
+%             12.*Gamma.*theta.*x1f.^2)./Ch - (p1f.*((S0.*(tanh(x1f./10 - 53./2).^2./50 - 1./50))./4 + 4.*Gamma.*theta.*x1f.^3))./Ch);
+%         
+%         p1(:,Npath+1-k)=p01(:,Npath+2-k)+1/2*(K1p1+K2p1);
+%     end
+%     
+%     for k=1:Npath
+%         x1f=x01(:,k);
+%         p1f=p01(:,k);
+%         K1x1=h*(((S0.*(tanh(x1f./10 - 53./2)./5 + 1./2))./4 - Gamma.*theta.*x1f.^4)./Ch - dab1 + (c.^2.*p1f)./2);
+%         
+%         x1f=x01(:,k)+K1x1;
+%         p1f=p01(:,k+1);
+%         K2x1=h*(((S0.*(tanh(x1f./10 - 53./2)./5 + 1./2))./4 - Gamma.*theta.*x1f.^4)./Ch - dab1 + (c.^2.*p1f)./2);
+%         
+%         x1(:,k+1)=x01(:,k)+1/2*(K1x1+K2x1);
+%     end
+%     
+%     if (max(max(abs(x1-x01)))<delta)&&(i>1000)
+%         break;
+%     end
+%     
+%     x01=x1;
+%     p01=p1;
+% end
+% figure;
+% for i=1:m00
+%     plot(T,x1(i,:));
+%     hold on
+% end
+% hold off
+
+
+%%% 迭代
 for i=1:10000000
     for k=1:Npath
         x1f=x01(:,Npath+2-k);
         p1f=p01(:,Npath+2-k);
-        K1p1=h*(- ((S0*tanh(x1f/10 - 53/2).*(tanh(x1f/10 - 53/2).^2/10 - 1/10))/100 - 12*Gamma*theta*x1f.^2)/Ch -...
-            (2*p1f.*((S0*(tanh(x1f/10 - 53/2).^2/50 - 1/50))/4 + 4*Gamma*theta*x1f.^3))/Ch);
+        K1p1=h*(- ((S0.*tanh(x1f./10 - 53./2).*(tanh(x1f./10 - 53./2).^2./10 - 1./10))./100 -...
+            12.*Gamma.*theta.*x1f.^2)./Ch - (p1f.*((S0.*(tanh(x1f./10 - 53./2).^2./50 - 1./50))./4 + 4.*Gamma.*theta.*x1f.^3))./Ch);
         
         x1f=x01(:,Npath+1-k);
         p1f=p01(:,Npath+2-k)+K1p1;
-        K2p1=h*(- ((S0*tanh(x1f/10 - 53/2).*(tanh(x1f/10 - 53/2).^2/10 - 1/10))/100 - 12*Gamma*theta*x1f.^2)/Ch -...
-            (2*p1f.*((S0*(tanh(x1f/10 - 53/2).^2/50 - 1/50))/4 + 4*Gamma*theta*x1f.^3))/Ch);
+        K2p1=h*(- ((S0.*tanh(x1f./10 - 53./2).*(tanh(x1f./10 - 53./2).^2./10 - 1./10))./100 -...
+            12.*Gamma.*theta.*x1f.^2)./Ch - (p1f.*((S0.*(tanh(x1f./10 - 53./2).^2./50 - 1./50))./4 + 4.*Gamma.*theta.*x1f.^3))./Ch);
         
         p1(:,Npath+1-k)=p01(:,Npath+2-k)+1/2*(K1p1+K2p1);
     end
@@ -65,11 +115,11 @@ for i=1:10000000
     for k=1:Npath
         x1f=x01(:,k);
         p1f=p01(:,k);
-        K1x1=h*(2*p1f*c^2 - 2*dab1 + ((S0*(tanh(x1f/10 - 53/2)/5 + 1/2))/2 - 2*Gamma*theta*x1f.^4)/Ch);
+        K1x1=h*(((S0.*(tanh(x1f./10 - 53./2)./5 + 1./2))./4 - Gamma.*theta.*x1f.^4)./Ch - dab1 + (c.^2.*p1f)./2);
         
         x1f=x01(:,k)+K1x1;
         p1f=p01(:,k+1);
-        K2x1=h*(2*p1f*c^2 - 2*dab1 + ((S0*(tanh(x1f/10 - 53/2)/5 + 1/2))/2 - 2*Gamma*theta*x1f.^4)/Ch);
+        K2x1=h*(((S0.*(tanh(x1f./10 - 53./2)./5 + 1./2))./4 - Gamma.*theta.*x1f.^4)./Ch - dab1 + (c.^2.*p1f)./2);
         
         x1(:,k+1)=x01(:,k)+1/2*(K1x1+K2x1);
     end
@@ -79,6 +129,10 @@ for i=1:10000000
     for k=1:K
         if (max(abs(x1(k,:)-x01(k,:)))<delta)&&(i>1000)
             xT1(pos(k))=x1(k,end);
+            I=[I k];
+        end
+        if (max(abs(x1(k,:)-x01(k,:)))>10000)
+            I0=[I0 pos(k)];
             I=[I k];
         end
     end
@@ -94,6 +148,8 @@ for i=1:10000000
     x01=x1;
     p01=p1;
 end
+xT1(I0)=[];
+lambda1(I0)=[];
 
 xT0=xT1;
 xT1=2/(xnode2-xnode1)*(xT1-(xnode1+xnode2)/2);
@@ -117,6 +173,7 @@ plot(xT0,lambda0,'*');
 % hold off
 
 %%% Neural Network
+m=length(xT1);
 eta=0.01;
 A0=xT1';
 Lambda=lambda1';
@@ -235,10 +292,10 @@ af=af*lambdascale;
 % zf=Wf*a1+bf;
 % af=zf;
 
-Npath=1e3;
+% Npath=1e3;
 x1=xnode(1)+0.1*T;
 p1=zeros(1,Npath+1);
-p1(end)=-af;
+p1(end)=af;
 x01=x1;
 p01=p1;
 delta=0.0001;
@@ -247,13 +304,13 @@ for i=1:100000
     for k=1:Npath
         x1f=x01(:,Npath+2-k);
         p1f=p01(:,Npath+2-k);
-        K1p1=h*(- ((S0*tanh(x1f/10 - 53/2)*(tanh(x1f/10 - 53/2)^2/10 - 1/10))/100 - 12*Gamma*theta*x1f^2)/Ch -...
-            (2*p1f*((S0*(tanh(x1f/10 - 53/2)^2/50 - 1/50))/4 + 4*Gamma*theta*x1f^3))/Ch);
+        K1p1=h*(- ((S0.*tanh(x1f./10 - 53./2).*(tanh(x1f./10 - 53./2).^2./10 - 1./10))./100 -...
+            12.*Gamma.*theta.*x1f.^2)./Ch - (p1f.*((S0.*(tanh(x1f./10 - 53./2).^2./50 - 1./50))./4 + 4.*Gamma.*theta.*x1f.^3))./Ch);
         
         x1f=x01(:,Npath+1-k);
         p1f=p01(:,Npath+2-k)+K1p1;
-        K2p1=h*(- ((S0*tanh(x1f/10 - 53/2)*(tanh(x1f/10 - 53/2)^2/10 - 1/10))/100 - 12*Gamma*theta*x1f^2)/Ch -...
-            (2*p1f*((S0*(tanh(x1f/10 - 53/2)^2/50 - 1/50))/4 + 4*Gamma*theta*x1f^3))/Ch);
+        K2p1=h*(- ((S0.*tanh(x1f./10 - 53./2).*(tanh(x1f./10 - 53./2).^2./10 - 1./10))./100 -...
+            12.*Gamma.*theta.*x1f.^2)./Ch - (p1f.*((S0.*(tanh(x1f./10 - 53./2).^2./50 - 1./50))./4 + 4.*Gamma.*theta.*x1f.^3))./Ch);
         
         p1(:,Npath+1-k)=p01(:,Npath+2-k)+1/2*(K1p1+K2p1);
     end
@@ -261,11 +318,11 @@ for i=1:100000
     for k=1:Npath
         x1f=x01(:,k);
         p1f=p01(:,k);
-        K1x1=h*(2*p1f*c^2 - 2*dab1 + ((S0*(tanh(x1f/10 - 53/2)/5 + 1/2))/2 - 2*Gamma*theta*x1f^4)/Ch);
+        K1x1=h*(((S0.*(tanh(x1f./10 - 53./2)./5 + 1./2))./4 - Gamma.*theta.*x1f.^4)./Ch - dab1 + (c.^2.*p1f)./2);
         
         x1f=x01(:,k)+K1x1;
         p1f=p01(:,k+1);
-        K2x1=h*(2*p1f*c^2 - 2*dab1 + ((S0*(tanh(x1f/10 - 53/2)/5 + 1/2))/2 - 2*Gamma*theta*x1f^4)/Ch);
+        K2x1=h*(((S0.*(tanh(x1f./10 - 53./2)./5 + 1./2))./4 - Gamma.*theta.*x1f.^4)./Ch - dab1 + (c.^2.*p1f)./2);
         
         x1(:,k+1)=x01(:,k)+1/2*(K1x1+K2x1);
     end
@@ -292,7 +349,7 @@ for i=1:Npath
 end
 
 figure;
-plot(T,X(1,:));
+plot(T,X(1,:),'+');
 
 figure;
 plot(T,X(2,:));
